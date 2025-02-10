@@ -1,32 +1,38 @@
 <?php
 session_start();
-include 'db.php';
+include 'database.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
-    $result = $conn->query($query);
 
-    if ($result->num_rows == 1) {
-        $user = $result->fetch_assoc();
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+    $stmt = $conn->prepare("SELECT id, userid, name, email, password FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-        if ($user['role'] == 0) {
-            header('Location: pages/admin.php');
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+
+
+        if ($password === $row['password']) {
+
+            $_SESSION['user'] = $row['name'];
+
+
+            header("Location: dashboard.php");
+            exit();
         } else {
-            header('Location: pages/user.php');
+            $error = "Invalid email or password!";
         }
     } else {
-        echo 'Invalid username or password.';
+        $error = "Invalid email or password!";
     }
+
+
+    $stmt->close();
+    $conn->close();
 }
 ?>
-
-<form method="POST" action="login.php">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-</form>
