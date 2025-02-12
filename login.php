@@ -3,30 +3,36 @@ session_start();
 include 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = md5($_POST['password']);
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
 
-    $query = "SELECT * FROM users WHERE username='$username' AND password='$password'";
-    $result = $conn->query($query);
+   
+    $stmt = $conn->prepare("SELECT id, username, email, password, role FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
     if ($result->num_rows == 1) {
         $user = $result->fetch_assoc();
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
 
-        if ($user['role'] == 0) {
-            header('Location: pages/admin.php');
+        if (password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['role'] = $user['role'];
+
+         
+            if ($user['role'] == 0) {
+                header('Location: pages/admin.php');
+            } else {
+                header('Location: pages/user.php');
+            }
+            exit;
         } else {
-            header('Location: pages/user.php');
+            echo "<script>alert('Invalid email or password.'); window.location.href='index.php';</script>";
         }
     } else {
-        echo 'Invalid username or password.';
+        echo "<script>alert('Invalid email or password.'); window.location.href='index.php';</script>";
     }
 }
 ?>
-
-<form method="POST" action="login.php">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <button type="submit">Login</button>
-</form>

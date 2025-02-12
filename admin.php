@@ -1,14 +1,8 @@
 <?php
 session_start();
-if (!isset($_SESSION['username'])) {
-    header('Location: ../login.php');
-    exit;
+if (!isset($_SESSION['email']) || $_SESSION['role'] != 0) {
+    header('Location: ../index.php');
+    exit();
 }
-
-if ($_SESSION['role'] != 0) {
-    echo 'Access denied. Admin only.';
-    exit;
-}
-
-echo 'Welcome to Admin Dashboard!';
+echo "Welcome, Admin " . $_SESSION['username'] . "!";
 ?>

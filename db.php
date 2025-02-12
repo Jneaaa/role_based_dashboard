@@ -1,12 +1,15 @@
 <?php
-$host = 'localhost';
-$db = 'role_based_dashboard';
-$user = 'root';
-$password = '';
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "role_based_dashboard";
 
-$conn = new mysqli($host, $user, $password, $db);
+
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 if ($conn->connect_error) {
-    die('Database connection failed: ' . $conn->connect_error);
+    die("❌ Connection failed: " . $conn->connect_error);
 }
+
+$conn->set_charset("utf8mb4");
 ?>

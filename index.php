@@ -1,3 +1,23 @@
+<?php
+session_start();
+
+
+if (isset($_SESSION['email'])) {
+    header('Location: pages/' . ($_SESSION['role'] == 0 ? 'admin.php' : 'user.php'));
+    exit;
+}
+
+
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+$errorMessage = "";
+if (isset($_GET['error'])) {
+    $errorMessage = "❌ Invalid email or password.";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,6 +33,7 @@
             align-items: center;
             height: 100vh;
             background: #f4f4f4;
+            margin: 0;
         }
 
         .login-container {
@@ -28,14 +49,24 @@
 <body>
     <div class="login-container">
         <h3 class="text-center">Login</h3>
-        <form method="POST" action="loginAction.php">
+
+       
+        <?php if ($errorMessage): ?>
+            <div class="alert alert-danger text-center">
+                <?= htmlspecialchars($errorMessage) ?>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" action="login.php">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+
             <div class="mb-3">
-                <label for="username" class="form-label">Email</label>
-                <input type="email" class="form-control" name="email" required>
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" autocomplete="off" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" name="password" required>
+                <input type="password" class="form-control" id="password" name="password" autocomplete="off" required>
             </div>
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
